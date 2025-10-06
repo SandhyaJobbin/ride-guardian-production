@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ride Guardian — Mission SafeTrip</title>
+
+  <!-- Production Tailwind CSS build -->
+  <link rel="stylesheet" href="./dist/output.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hover.css@2.3.1/css/hover-min.css" />
+</head>
+<body class="p-8">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Header / title -->
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 bg-gradient-logo rounded-xl flex items-center justify-center text-white font-extrabold">RG</div>
+        <div>
+          <h1 class="text-2xl font-bold text-dark">Ride Guardian: Mission SafeTrip</h1>
+          <div class="text-sm muted">Train. Protect. Certify. — Metrovia</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content area (Start / Map / Level) -->
+    <main id="app" class="card p-6">
+      <!-- Start screen -->
+      <section id="startScreen">
+        <div class="grid grid-cols-2 gap-6 items-center">
+          <div>
+            <h2 class="text-3xl font-extrabold text-dark">Become a Ride Guardian</h2>
+            <p class="mt-2 muted">Learn 24 real-world safety steps across 3 levels. Earn your Guardian License.</p>
+
+            <div class="mt-6">
+              <label class="block text-sm mb-2">Enter your name</label>
+              <input id="playerNameInput" type="text" placeholder="Your name" maxlength="30" class="w-full p-3 rounded-lg border border-gray-200" />
+              <div class="flex gap-3 mt-4">
+                <button id="howBtn" class="btn-ghost">How to play</button>
+                <button id="scoreBtn" class="btn-ghost">Scoring</button>
+              </div>
+
+              <div class="mt-6">
+                <button id="startBtn" class="btn-primary" disabled>Start Mission</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card p-4">
+            <h3 class="font-semibold text-dark">Your Progress</h3>
+            <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div class="p-3">
+                <div class="text-sm muted">Levels</div>
+                <div class="font-bold text-lg">3</div>
+              </div>
+              <div class="p-3">
+                <div class="text-sm muted">Scenarios</div>
+                <div class="font-bold text-lg">15</div>
+              </div>
+              <div class="p-3">
+                <div class="text-sm muted">Retake pool</div>
+                <div class="font-bold text-lg">9</div>
+              </div>
+            </div>
+            <div class="mt-4 text-xs muted">Resume progress available. Your data is stored locally only.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Level Map -->
+      <section id="mapScreen" class="hidden">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold">Level Map</h2>
+            <div class="text-sm muted">Choose a level to begin. Clear a level (>=60%) to unlock the next.</div>
+          </div>
+          <div>
+            <button id="backToStart" class="btn-ghost">Back</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 mb-6 layout-grid">
+          <div class="p-4 card">
+            <h3 class="font-semibold">Level 1</h3>
+            <p class="muted text-sm">Identity & Awareness</p>
+            <div class="mt-3 flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="lvl1Best">—</div>
+                <div class="text-xs muted">Best score</div>
+              </div>
+              <div>
+                <button class="btn-primary playLevel" data-level="1">Play</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 card" id="lvl2Card">
+            <h3 class="font-semibold">Level 2</h3>
+            <p class="muted text-sm">Digital Defense</p>
+            <div class="mt-3 flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="lvl2Best">—</div>
+                <div class="text-xs muted">Best score</div>
+              </div>
+              <div>
+                <button class="btn-ghost" disabled>Locked</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 card" id="lvl3Card">
+            <h3 class="font-semibold">Level 3</h3>
+            <p class="muted text-sm">Emergency Tactics</p>
+            <div class="mt-3 flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="lvl3Best">—</div>
+                <div class="text-xs muted">Best score</div>
+              </div>
+              <div>
+                <button class="btn-ghost" disabled>Locked</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <div class="text-sm muted">Attempts left per level tracked. You get 1 retry per level.</div>
+          <div>
+            <button id="resetProgress" class="btn-ghost">Reset Progress</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- In-level screen -->
+      <section id="levelScreen" class="hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 id="levelTitle" class="text-xl font-bold"></h2>
+            <div class="text-xs muted" id="levelSub"></div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="text-xs muted">Player</div>
+              <div id="playerNameTag" class="font-semibold"></div>
+            </div>
+            <div class="text-right ml-4">
+              <div class="text-xs muted">Level Score</div>
+              <div id="levelScore" class="font-bold">0</div>
+            </div>
+            <div>
+              <button id="quitLevel" class="btn-ghost">Quit</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 layout-grid">
+          <div class="col-span-2 p-4 card">
+            <div class="flex items-start gap-4">
+              <div class="timer-circle" id="timerCircle"><div id="timerText" class="font-bold">60</div></div>
+              <div class="flex-1">
+                <div id="questionText" class="text-lg font-semibold"></div>
+                <div id="questionMedia" class="mt-2 muted text-sm"></div>
+
+                <div id="options" class="mt-4 grid gap-3"></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="p-4 card">
+            <div>
+              <h4 class="font-semibold">Level Progress</h4>
+              <div class="mt-2" id="progressSegments"></div>
+            </div>
+
+            <div class="mt-4">
+              <h4 class="font-semibold">Need Help?</h4>
+              <div class="mt-2 text-sm muted">Get safety tips from Lyft.</div>
+              <button id="hintBtn" class="mt-2 btn-ghost">Safety Tips</button>
+            </div>
+
+            <div class="mt-4">
+              <h4 class="font-semibold">Controls</h4>
+              <div class="mt-2 flex flex-col gap-2">
+                <button id="prevBtn" class="btn-ghost">Prev</button>
+                <button id="nextBtn" class="btn-ghost">Next</button>
+              </div>
+            </div>
+
+          </aside>
+        </div>
+
+      </section>
+
+      <!-- Level summary modal (simple inline) -->
+      <section id="summaryScreen" class="hidden card p-4 mt-4">
+        <h3 class="font-bold">Level Summary</h3>
+        <div class="mt-2" id="summaryBody"></div>
+        <div class="mt-4 flex gap-3">
+          <button id="replayLevel" class="btn-primary">Replay Level</button>
+          <button id="jumpToNextLevel" class="btn-primary hidden">Jump to Next Level</button>
+          <button id="returnMap" class="btn-ghost">Return to Map</button>
+        </div>
+      </section>
+
+      <!-- Completion / Certificate -->
+      <section id="completeScreen" class="hidden p-6">
+        <div class="card p-6 text-center">
+          <h2 class="text-2xl font-bold">Congratulations, Guardian!</h2>
+          <p class="muted mt-2">You've completed all levels and earned your certificate.</p>
+          <div class="mt-4">
+            <button id="showCert" class="btn-primary">View Certificate</button>
+            <button id="viewBoard" class="btn-ghost">View Leaderboard</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Certificate modal (hidden, printable) -->
+      <div id="certificate" class="hidden card p-6 mt-4">
+        <div id="certContent" class="text-center">
+          <h2 class="text-2xl font-bold">Ride Guardian Certificate</h2>
+          <div class="mt-4 text-lg" id="certName"></div>
+          <div class="mt-2 muted" id="certDate"></div>
+          <div class="mt-4" id="certScore"></div>
+          <div class="mt-6">
+            <button onclick="window.print()" class="btn-primary">Print / Save PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <section id="leaderboard" class="hidden card p-4 mt-4">
+        <h3 class="font-bold">Leaderboard (Local)</h3>
+        <div class="mt-3" id="leaderbody"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Custom Score Popup Modal -->
+  <div id="scorePopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="card p-6 max-w-md mx-4 relative">
+      <div class="text-center">
+        <div id="scoreIcon" class="text-4xl mb-3">🎯</div>
+        <h3 id="scoreTitle" class="text-xl font-bold mb-2">Score Update</h3>
+        <div id="scoreMessage" class="text-lg mb-4"></div>
+        <div id="scoreBreakdown" class="text-sm muted mb-4"></div>
+        <button id="scorePopupClose" class="btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dataset & Game config embedded -->
+  <script>
+    // Game meta
+    const GAME_META = {
+      title: "Ride Guardian: Mission SafeTrip",
+      levels: 3,
+      scenariosPerLevel: 5,
+      clearThresholdPct: 60,
+      maxRetriesPerLevel: 1,
+      timerSeconds: 60,
+      fastAnswerThreshold: 10,
+      // New scoring system for max 100 points
+      basePoints: 12,           // 12 points per correct answer (5×12=60)
+      timeBonus: 0.4,           // 0.4 points per remaining second (max 24 per question)
+      fastBonus: 3,             // 3 points for fast answers (5×3=15)
+      completionBonus: 25       // 25 points for completing level
+      // Total max: 60 + 15 + 25 = 100 points
+    };
+
+    // Questions dataset (embedded from user's Dataset.json)
+    const QUESTIONS = [
+      {"id":"q01","question":"Before starting a ride, which three items should you check against the app details?","options":["Driver name, car model, license plate","Driver's social media, age, favorite music","Car color only","Driver's family photo"],"answer":0,"explanation":"Always confirm the driver's name, car model and license plate shown in the app before boarding."},
+      {"id":"q02","question":"If a driver asks you to pay in cash when the app shows card payment completed, you should:","options":["Pay cash immediately","Cancel the ride in the app and report","Share your bank PIN","Give the driver a tip only"],"answer":1,"explanation":"Cancel and report — unexpected cash requests can indicate fraud or miscommunication."},
+      {"id":"q03","question":"Which feature lets friends track your trip in real time?","options":["Incognito mode","Live location sharing","Silent mode","Airplane mode"],"answer":1,"explanation":"Live location sharing provides continuous route updates to trusted contacts for safety."},
+      {"id":"q04","question":"What should you do if the driver starts driving a clearly different route than the app suggests?","options":["Ignore it and stay quiet","Politely ask the driver about the route and check in-app map","Get out immediately on the highway","Turn off your phone"],"answer":1,"explanation":"Ask and verify — sometimes drivers reroute for traffic; if it looks wrong, confirm and document."},
+      {"id":"q05","question":"Two-factor authentication (2FA) on your account helps prevent what?","options":["Slower app performance","Account takeover and impersonation","Better in-app ads","Driver delays"],"answer":1,"explanation":"2FA adds an extra verification step, reducing unauthorized logins and impersonation."},
+      {"id":"q06","question":"Which is the best practice when sharing your ride details on social media?","options":["Share full live location publicly","Limit details and avoid sharing live location publicly","Share your password","Post the driver's photo and plate publicly"],"answer":1,"explanation":"Avoid public sharing; only share live location with trusted contacts, not on public feeds."},
+      {"id":"q07","question":"If you feel unsafe during a ride, which immediate action is recommended?","options":["Speak to the driver calmly and ask to stop in a safe public area","Create a social media post later","Throw items in the car","Ignore and hope it ends soon"],"answer":0,"explanation":"Request a stop in a well-lit public area and contact emergency services or a trusted person if needed."},
+      {"id":"q08","question":"What information is *not* safe to give to a driver?","options":["A simple confirmation of drop-off address","Your home PIN or bank details","Telling them to take a specific route","Requesting music preference"],"answer":1,"explanation":"Never share PINs, passwords, or bank details with anyone — drivers don't need this information."},
+      {"id":"q09","question":"Why is it useful to take a quick photo of the vehicle's license plate when necessary?","options":["To post online for fun","To have proof if you need to report the ride","To show to the driver as greeting","It's not useful at all"],"answer":1,"explanation":"A plate photo provides evidence you can use when reporting issues to the service or authorities."},
+      {"id":"q10","question":"If your phone battery is low before a ride, best practice is to:","options":["Cancel the ride and stay home","Enable low-power mode and share live location immediately","Don't charge it","Give the driver your charger permanently"],"answer":1,"explanation":"Enable battery-saving mode, plug in if possible, and share your location so others can track the trip."},
+      {"id":"q11","question":"Which option improves account security the most?","options":["Using the same simple password everywhere","Enabling two-factor authentication and a strong unique password","Sharing login with friends","Using 'password' as password"],"answer":1,"explanation":"2FA plus a unique strong password greatly reduces risk of unauthorized access."},
+      {"id":"q12","question":"A driver arrives who is different from the photo in the app. You should:","options":["Get in and hope it's fine","Request the driver to confirm their name, or cancel if mismatched","Take a selfie with them","Give the driver your phone"],"answer":1,"explanation":"Mismatched driver/photos are a red flag; ask for confirmation, and cancel if not matching."},
+      {"id":"q13","question":"Which of these helps in case of an emergency during a trip?","options":["Memorize the driver's license plate before riding","Turn off location sharing","Tell the driver your passwords","Keep all doors locked and silent"],"answer":0,"explanation":"Knowing the license plate and route helps emergency responders or platform support assist quickly."},
+      {"id":"q14","question":"If a trip fare looks incorrect after completion, the best first step is:","options":["Ignore and never use the app again","Open the trip receipt in the app and report a fare issue","Pay the driver extra cash later","Delete the app"],"answer":1,"explanation":"Use the app's receipt and support flow to report fare discrepancies for resolution."},
+      {"id":"q15","question":"Which is a safe way to meet a rideshare driver at night?","options":["Stand in a secluded alley","Wait in a well-lit public area nearby and confirm car details","Walk away immediately","Chase the car while running"],"answer":1,"explanation":"Meeting in well-lit, populated areas reduces risk and makes it easier to confirm the correct car."},
+      {"id":"q16","question":"When sharing trip status with a friend, what detail is safest to include?","options":["Your banking password","Driver name and live ETA to trusted contact","Home Wi-Fi password","Your full chat history with the driver"],"answer":1,"explanation":"Share driver name and ETA with a trusted contact — avoid sharing sensitive account information."},
+      {"id":"q17","question":"If a driver behaves aggressively, you should:","options":["Engage and escalate physically","Call emergency services if in immediate danger and use app's emergency button","Ignore and record video only","Pay them to leave"],"answer":1,"explanation":"Prioritize safety: call emergency services when threatened and use the app's emergency features."},
+      {"id":"q18","question":"Which sign suggests a potential scam during booking?","options":["Driver calls you using the platform number and confirms ride","Driver asks you to cancel the app ride and book privately","Driver follows the app route","Driver shows official ID when asked"],"answer":1,"explanation":"Asking to move off-platform for payment or communication is a common scam — keep interactions in-app."},
+      {"id":"q19","question":"Why is it a good idea to review a trip's summary after a ride?","options":["To post it publicly","To check route, fare, and report any problems promptly","To share it with strangers","To reset your phone"],"answer":1,"explanation":"Reviewing receipts and routes helps you spot issues and report them while details are fresh."},
+      {"id":"q20","question":"Which practice helps lower the chance of being targeted while waiting for a ride?","options":["Tell strangers your destination out loud","Wait with others in a populated spot and stay aware","Hand your bag to a passerby","Close your eyes and listen to music loudly"],"answer":1,"explanation":"Waiting in populated, well-lit locations and staying attentive helps reduce risk of targeting."},
+      {"id":"q21","question":"What should you check in the driver's app profile before boarding?","options":["Driver rating and number of completed trips","Driver's browsing history","Driver's phone wallpapers","Driver's playlist"],"answer":0,"explanation":"Ratings and trip history in the driver profile are useful signals of reliability."},
+      {"id":"q22","question":"Which step helps ensure a safer shared ride with unfamiliar passengers?","options":["Start a loud argument","Sit near the driver and keep personal items close","Share your home address loudly","Give away your phone"],"answer":1,"explanation":"Sitting closer to the driver and keeping belongings secure helps you stay safer in shared rides."},
+      {"id":"q23","question":"If you are unsure about the identity of the driver calling you, what should you do?","options":["Give them your confirmation code over the phone","Use the in-app call or message function to verify details","Meet them without checking","Provide personal ID immediately"],"answer":1,"explanation":"Use the app's communication methods to verify driver details before meeting — they are safer than unknown phone numbers."},
+      {"id":"q24","question":"Why is it important to keep your account information up to date (phone/email)?","options":["So you get more ads","So support and emergency contacts can reach you and verify trips","It isn't important","To let drivers contact your contacts"],"answer":1,"explanation":"Current contact info ensures the service can reach you for trip updates, receipts, or emergencies."}
+    ];
+
+    // Level mapping: 5 fixed questions per level, remaining pool for retakes
+    const LEVELS = {
+      1: {fixed: ["q01","q12","q21","q15","q20"]},
+      2: {fixed: ["q02","q05","q11","q18","q08"]},
+      3: {fixed: ["q04","q07","q14","q17","q19"]}
+    };
+    const RETAKE_POOL = ["q03","q06","q09","q10","q13","q16","q22","q23","q24"];
+
+    // localStorage keys
+    const LS_KEYS = {meta: 'game_meta', state: 'game_state', board: 'game_leaderboard'};
+
+    // Utility: get question by id
+    function getQ(id){return QUESTIONS.find(q=>q.id===id);} 
+
+    // Initial setup: load/save game_state
+    let state = loadState();
+
+    function defaultState(){
+      return {
+        playerName: '',
+        startedAt: null,
+        currentLevel: 1,
+        currentIndex: 0,
+        levels: [
+          {levelNumber:1,bestScore:0,bestCorrect:0,attemptsUsed:0,completed:false},
+          {levelNumber:2,bestScore:0,bestCorrect:0,attemptsUsed:0,completed:false},
+          {levelNumber:3,bestScore:0,bestCorrect:0,attemptsUsed:0,completed:false}
+        ],
+        attemptsLeftPerLevel: [GAME_META.maxRetriesPerLevel,GAME_META.maxRetriesPerLevel,GAME_META.maxRetriesPerLevel]
+      }
+    }
+
+    function loadState(){
+      try{
+        const s = JSON.parse(localStorage.getItem(LS_KEYS.state));
+        return s||defaultState();
+      }catch(e){return defaultState();}
+    }
+    function saveState(){localStorage.setItem(LS_KEYS.state, JSON.stringify(state));}
+    function resetState(){state = defaultState(); saveState(); location.reload();}
+
+    // UI elements
+    const startScreen = document.getElementById('startScreen');
+    const mapScreen = document.getElementById('mapScreen');
+    const levelScreen = document.getElementById('levelScreen');
+    const summaryScreen = document.getElementById('summaryScreen');
+    const completeScreen = document.getElementById('completeScreen');
+    const certificate = document.getElementById('certificate');
+
+    const playerNameInput = document.getElementById('playerNameInput');
+    const startBtn = document.getElementById('startBtn');
+    const howBtn = document.getElementById('howBtn');
+    const scoreBtn = document.getElementById('scoreBtn');
+
+    // Map controls
+    const playButtons = document.querySelectorAll('.playLevel');
+    const lvl1Best = document.getElementById('lvl1Best');
+    const lvl2Best = document.getElementById('lvl2Best');
+    const lvl3Best = document.getElementById('lvl3Best');
+    const backToStart = document.getElementById('backToStart');
+    const resetProgress = document.getElementById('resetProgress');
+
+    // Level controls
+    const levelTitle = document.getElementById('levelTitle');
+    const levelSub = document.getElementById('levelSub');
+    const playerNameTag = document.getElementById('playerNameTag');
+    const levelScoreEl = document.getElementById('levelScore');
+    const timerText = document.getElementById('timerText');
+    const questionText = document.getElementById('questionText');
+    const optionsEl = document.getElementById('options');
+    const hintBtn = document.getElementById('hintBtn');
+    const quitLevel = document.getElementById('quitLevel');
+    const progressSegments = document.getElementById('progressSegments');
+
+    // Summary controls
+    const summaryBody = document.getElementById('summaryBody');
+    const replayLevel = document.getElementById('replayLevel');
+    const jumpToNextLevel = document.getElementById('jumpToNextLevel');
+    const returnMap = document.getElementById('returnMap');
+
+    // Certificate
+    const certName = document.getElementById('certName');
+    const certDate = document.getElementById('certDate');
+    const certScore = document.getElementById('certScore');
+    const showCert = document.getElementById('showCert');
+
+    // Leaderboard
+    const leaderbody = document.getElementById('leaderbody');
+
+    // App state for active play
+    let active = {
+      level: null,
+      questions: [],
+      index: 0,
+      scoreThisRun: 0,
+      correctCount: 0,
+      timer: null,
+      remaining: GAME_META.timerSeconds,
+      hintUsedThisQ: false
+    };
+
+    // --- UI Wiring ---
+    // Name input
+    playerNameInput.addEventListener('input', ()=>{
+      const v = playerNameInput.value.trim();
+      startBtn.disabled = !v;
+    });
+    startBtn.addEventListener('click', ()=>{
+      const name = playerNameInput.value.trim();
+      if(!name) return;
+      state.playerName = name;
+      state.startedAt = new Date().toISOString();
+      saveState();
+      showMap();
+    });
+
+    howBtn.addEventListener('click', ()=>{
+      alert(`How to play:\n\n1. 3 levels, 5 scenarios each.\n2. 60s per question; answer within 10s for fast bonus.\n3. Clear >=60% to unlock next.\n4. 1 retry per level.\n\nFor detailed safety information and guidelines, visit Lyft's support page at:\nhttps://help.lyft.com/hc/en-us\n\nUse the "Safety Tips" button during gameplay for quick access.`)
+    });
+    scoreBtn.addEventListener('click', ()=>{
+      const scoringInfo = `Correct Answer: +${GAME_META.basePoints} pts\nIncorrect Answer: -2 pts\nTime Bonus: +${GAME_META.timeBonus} × remaining seconds\nFast Answer (<${GAME_META.fastAnswerThreshold}s): +${GAME_META.fastBonus} pts\nLevel Clear Bonus: +${GAME_META.completionBonus} pts\n\nMaximum possible: 100 pts per level`;
+      showScorePopup('Scoring System', 'How points are calculated:', scoringInfo, true);
+    });
+
+    // Map play buttons
+    playButtons.forEach(btn=>btn.addEventListener('click',(e)=>{
+      const lvl = parseInt(e.currentTarget.dataset.level,10);
+      startLevel(lvl);
+    }));
+
+    backToStart.addEventListener('click', ()=>{showStart();});
+    resetProgress.addEventListener('click', ()=>{
+      if(confirm('Reset all progress?')) resetState();
+    });
+
+    quitLevel.addEventListener('click', ()=>{if(confirm('Quit level and return to map?')){saveState(); showMap();}});
+
+    hintBtn.addEventListener('click', ()=>{
+      window.open('https://help.lyft.com/hc/en-us', '_blank');
+    });
+
+    prevBtn.addEventListener('click', ()=>{ // previous scenario (allowed for review; no score change)
+      if(active.index>0){active.index--; renderQuestion();}
+    });
+    nextBtn.addEventListener('click', ()=>{ // skip forward (treated as incorrect if unanswered)
+      handleAnswer(null,true);
+    });
+
+    // Summary buttons
+    replayLevel.addEventListener('click', ()=>{ 
+      if(state.attemptsLeftPerLevel[active.level-1]<=0){
+        showScorePopup('No Retries Left', 'You have used all retries for this level.', 'Try other levels or reset your progress.', false);
+      } else {
+        state.attemptsLeftPerLevel[active.level-1]--; 
+        state.levels[active.level-1].attemptsUsed++; 
+        saveState(); 
+        startLevel(active.level,true);
+      }
+    });
+    jumpToNextLevel.addEventListener('click', ()=>{
+      const nextLevel = active.level + 1;
+      if(nextLevel <= 3 && state.levels[nextLevel-2].completed) {
+        startLevel(nextLevel);
+      }
+    });
+    returnMap.addEventListener('click', ()=>{showMap();});
+
+    // Certificate / leaderboard
+    showCert.addEventListener('click', ()=>{renderCertificate(); certificate.classList.remove('hidden'); window.scrollTo(0,document.body.scrollHeight);} );
+
+    // --- Core functions ---
+    function showStart(){startScreen.classList.remove('hidden'); mapScreen.classList.add('hidden'); levelScreen.classList.add('hidden'); summaryScreen.classList.add('hidden'); completeScreen.classList.add('hidden'); certificate.classList.add('hidden');}
+    function showMap(){startScreen.classList.add('hidden'); mapScreen.classList.remove('hidden'); levelScreen.classList.add('hidden'); summaryScreen.classList.add('hidden'); completeScreen.classList.add('hidden'); certificate.classList.add('hidden'); renderMap();}
+    function showLevel(){startScreen.classList.add('hidden'); mapScreen.classList.add('hidden'); levelScreen.classList.remove('hidden'); summaryScreen.classList.add('hidden'); completeScreen.classList.add('hidden'); certificate.classList.add('hidden');}
+
+    function renderMap(){ // update best scores and locks
+      lvl1Best.textContent = state.levels[0].bestScore || '—';
+      lvl2Best.textContent = state.levels[1].bestScore || '—';
+      lvl3Best.textContent = state.levels[2].bestScore || '—';
+
+      // Lock logic: level 2 unlocked if level1 cleared
+      if(state.levels[0].completed){
+        document.querySelector('#lvl2Card button').disabled = false; document.querySelector('#lvl2Card button').classList.add('btn-primary');
+        document.querySelector('#lvl2Card button').textContent = 'Play'; document.querySelector('#lvl2Card button').dataset.level = 2; document.querySelector('#lvl2Card button').classList.remove('btn-ghost');
+      }
+      if(state.levels[1].completed){
+        document.querySelector('#lvl3Card button').disabled = false; document.querySelector('#lvl3Card button').classList.add('btn-primary');
+        document.querySelector('#lvl3Card button').textContent = 'Play'; document.querySelector('#lvl3Card button').dataset.level = 3; document.querySelector('#lvl3Card button').classList.remove('btn-ghost');
+      }
+
+      // attach dynamic handlers (buttons may be replaced)
+      document.querySelectorAll('#lvl2Card button, #lvl3Card button').forEach(btn=>{btn.onclick = (e)=>{const lvl=parseInt(e.currentTarget.dataset.level||0,10); if(lvl) startLevel(lvl); else alert('Locked. Clear previous levels to unlock.')}})
+    }
+
+    function startLevel(levelNum, isReplay=false){
+      active.level = levelNum;
+      active.index = 0; active.scoreThisRun = 0; active.correctCount = 0; active.questions = [];
+      active.hintUsedThisQ = false;
+
+      // Build question set: fixed + if replay or retake use random from pool
+      const fixedIds = LEVELS[levelNum].fixed.slice();
+      active.questions = fixedIds.map(id=>Object.assign({}, getQ(id)));
+
+      // If replay/retake or if we want to include variety, pick random from RETAKE_POOL to fill 0 (we already have 5 fixed)
+      // For retake mode (replayLevel), replace some questions randomly with ones from pool to keep it fresh.
+      if(isReplay){
+        shuffle(RETAKE_POOL);
+        // replace up to 3 questions with random picks (but keep at least 2 fixed)
+        const replaceCount = 2;
+        for(let i=0;i<replaceCount;i++){ active.questions[active.questions.length-1-i] = Object.assign({}, getQ(RETAKE_POOL[i])); }
+      }
+
+      renderLevelHeader();
+      renderQuestion();
+      showLevel();
+    }
+
+    function renderLevelHeader(){
+      levelTitle.textContent = `Level ${active.level} — ${active.level===1? 'Identity & Awareness': active.level===2? 'Digital Defense':'Emergency Tactics'}`;
+      levelSub.textContent = `${active.index+1} of ${GAME_META.scenariosPerLevel}`;
+      playerNameTag.textContent = state.playerName || 'Guest';
+      levelScoreEl.textContent = active.scoreThisRun;
+      renderProgressSegments();
+    }
+
+    function renderProgressSegments(){
+      progressSegments.innerHTML = '';
+      
+      // Create container for progress bar
+      const progressContainer = document.createElement('div');
+      progressContainer.className = 'progress-container';
+      
+      for(let i=0;i<GAME_META.scenariosPerLevel;i++){
+        const segment = document.createElement('div');
+        segment.className = 'progress-segment';
+        
+        // Add charging effect based on progress
+        if(i < active.index) {
+          // Completed questions - show as charged
+          segment.classList.add('charged');
+        } else if(i === active.index) {
+          // Current question - show as active
+          segment.classList.add('active');
+        } else {
+          // Future questions - show as empty
+          segment.classList.add('empty');
+        }
+        
+        progressContainer.appendChild(segment);
+      }
+      
+      progressSegments.appendChild(progressContainer);
+    }
+
+    function renderQuestion(){
+      clearTimer(); active.remaining = GAME_META.timerSeconds; active.hintUsedThisQ = false; updateTimerText();
+      const q = active.questions[active.index];
+      questionText.textContent = `Q${active.index+1}. ${q.question}`;
+      optionsEl.innerHTML = '';
+      q.options.forEach((opt,i)=>{
+        const b = document.createElement('button'); b.className='w-full p-3 text-left rounded-lg border border-gray-200'; b.textContent = opt; b.onclick = ()=>{handleAnswer(i,false)}; optionsEl.appendChild(b);
+      });
+      renderLevelHeader();
+      startTimer();
+    }
+
+    function handleAnswer(choice,forced=false){
+      clearTimer();
+      const q = active.questions[active.index];
+      let correct = (choice===q.answer);
+      // If forced (skip) treat as incorrect
+      if(forced) correct=false;
+
+      const continueGame = () => {
+        // move to next or end
+        active.index++;
+        if(active.index >= GAME_META.scenariosPerLevel){
+          finishLevel();
+        } else {
+          renderQuestion();
+        }
+      };
+
+      if(correct){
+        // New scoring: base + time bonus + possible fast bonus
+        const base = GAME_META.basePoints; 
+        const timeBonus = Math.round(GAME_META.timeBonus * active.remaining); 
+        const fast = (GAME_META.timerSeconds-active.remaining) <= GAME_META.fastAnswerThreshold ? GAME_META.fastBonus : 0;
+        const total = base + timeBonus + fast;
+        active.scoreThisRun += total; active.correctCount++;
+        
+        const breakdown = `Base: +${base} pts\nTime bonus: +${timeBonus} pts${fast > 0 ? '\nFast bonus: +' + fast + ' pts' : ''}`;
+        showScorePopup('Correct Answer!', `+${total} points`, breakdown, true, continueGame);
+      } else {
+        active.scoreThisRun -= 2; // Reduced penalty
+        showScorePopup('Incorrect Answer', '-2 points', 'Better luck next time!', false, continueGame);
+      }
+    }
+
+    function finishLevel(){
+      // apply completion bonus if cleared
+      const cleared = (active.correctCount / GAME_META.scenariosPerLevel) * 100 >= GAME_META.clearThresholdPct;
+      if(cleared){ 
+        active.scoreThisRun += GAME_META.completionBonus; 
+        setTimeout(() => {
+          showScorePopup('Level Cleared! 🎉', `+${GAME_META.completionBonus} completion bonus`, `Great job! You scored ${active.correctCount}/${GAME_META.scenariosPerLevel} correct answers.`, true);
+        }, 500);
+      }
+      // cap negative floor
+      if(active.scoreThisRun < 0) active.scoreThisRun = Math.max(active.scoreThisRun,0);
+
+      // update state.best and completed
+      const idx = active.level -1;
+      const prevBest = state.levels[idx].bestScore || 0;
+      if(active.scoreThisRun > prevBest) state.levels[idx].bestScore = active.scoreThisRun; 
+      state.levels[idx].bestCorrect = Math.max(state.levels[idx].bestCorrect || 0, active.correctCount);
+      if(cleared) state.levels[idx].completed = true;
+      saveState();
+
+      // show summary
+      summaryBody.innerHTML = `Score this run: <strong>${active.scoreThisRun}</strong><br/>Correct: ${active.correctCount} / ${GAME_META.scenariosPerLevel}<br/>Level cleared: ${cleared ? 'Yes' : 'No'}`;
+      
+      // Show/hide Jump to Next Level button
+      const nextLevel = active.level + 1;
+      const hasNextLevel = nextLevel <= 3;
+      const nextLevelUnlocked = hasNextLevel && cleared;
+      
+      if(nextLevelUnlocked) {
+        jumpToNextLevel.classList.remove('hidden');
+      } else {
+        jumpToNextLevel.classList.add('hidden');
+      }
+      
+      summaryScreen.classList.remove('hidden');
+      levelScreen.classList.add('hidden');
+
+      // check if all completed
+      if(state.levels.every(l=>l.completed)){
+        completeScreen.classList.remove('hidden');
+        // add to leaderboard
+        addLeaderboardEntry();
+      }
+    }
+
+    function addLeaderboardEntry(){
+      // final score: sum of bests
+      const finalScore = state.levels.reduce((s,l)=>s+(l.bestScore||0),0);
+      const board = JSON.parse(localStorage.getItem(LS_KEYS.board)||'[]');
+      board.push({name: state.playerName, score: finalScore, date: new Date().toISOString().slice(0,10)});
+      localStorage.setItem(LS_KEYS.board, JSON.stringify(board));
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard(){
+      const board = JSON.parse(localStorage.getItem(LS_KEYS.board)||'[]');
+      leaderbody.innerHTML = '';
+      if(board.length===0){leaderbody.textContent = 'No entries yet.'; return}
+      const table = document.createElement('table'); table.className='w-full';
+      table.innerHTML = `<thead><tr><th>Name</th><th>Score</th><th>Date</th></tr></thead>`;
+      const tbody = document.createElement('tbody');
+      board.slice(-10).reverse().forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.name}</td><td>${r.score}</td><td>${r.date}</td>`; tbody.appendChild(tr);});
+      table.appendChild(tbody); leaderbody.appendChild(table);
+    }
+
+    // Timer helpers
+    function startTimer(){
+      active.timer = setInterval(()=>{
+        active.remaining -= 1;
+        updateTimerText();
+        if(active.remaining<=0){ clearTimer(); handleAnswer(null,true); }
+      },1000);
+    }
+    function clearTimer(){ if(active.timer) clearInterval(active.timer); active.timer=null; }
+    function updateTimerText(){ timerText.textContent = active.remaining; if(active.remaining<=10) timerText.classList.add('animate__animated','animate__pulse'); else timerText.classList.remove('animate__animated','animate__pulse'); }
+
+    // Custom Score Popup Functions
+    let popupCallback = null;
+    
+    function showScorePopup(title, message, breakdown, isCorrect, callback) {
+      const popup = document.getElementById('scorePopup');
+      const icon = document.getElementById('scoreIcon');
+      const titleEl = document.getElementById('scoreTitle');
+      const messageEl = document.getElementById('scoreMessage');
+      const breakdownEl = document.getElementById('scoreBreakdown');
+      
+      icon.textContent = isCorrect ? '✅' : '❌';
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      breakdownEl.textContent = breakdown || '';
+      
+      popupCallback = callback;
+      popup.classList.remove('hidden');
+      
+      // Update level score display immediately
+      levelScoreEl.textContent = active.scoreThisRun;
+    }
+    
+    function hideScorePopup() {
+      document.getElementById('scorePopup').classList.add('hidden');
+      if (popupCallback) {
+        popupCallback();
+        popupCallback = null;
+      }
+    }
+    
+    // Add event listener for popup close button
+    document.getElementById('scorePopupClose').addEventListener('click', hideScorePopup);
+    
+    // Close popup when clicking outside
+    document.getElementById('scorePopup').addEventListener('click', (e) => {
+      if (e.target.id === 'scorePopup') hideScorePopup();
+    });
+
+    // Helpers
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+    function renderCertificate(){
+      certName.textContent = state.playerName;
+      certDate.textContent = new Date().toLocaleDateString();
+      const finalScore = state.levels.reduce((s,l)=>s+(l.bestScore||0),0);
+      certScore.textContent = `Final Score: ${finalScore}`;
+    }
+
+    // On load
+    (function init(){
+      // if state has playerName then show map option to resume
+      if(state.playerName){ playerNameInput.value = state.playerName; startBtn.disabled = false; }
+      showStart();
+      renderLeaderboard();
+    })();
+
+  </script>
+</body>
+</html>
